@@ -2,7 +2,7 @@ from flask_restx import Api
 from py2neo import Graph
 
 
-graph = Graph("bolt://localhost:7687", auth=("neo4j", "12345678"))
+graph = Graph("neo4j+s://45486069.databases.neo4j.io", auth=("neo4j", "12345678"))
 api = Api()
 
 
