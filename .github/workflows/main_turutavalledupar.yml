@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'tuRutaValledupar'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EA2B0C3868F54034B7DEB883C488851D }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AA0CE2414DD0419B94C01B0FCC1DA7C3 }}
