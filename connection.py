@@ -1,7 +1,6 @@
 from flask_restx import Api
-from flask import jsonify
 from py2neo import Graph
-from neo4j.exceptions import Neo4jError, ClientError
+from neo4j.exceptions import Neo4jError
 
 
 graph = Graph("neo4j+s://45486069.databases.neo4j.io", auth=("neo4j", "12345678"))
