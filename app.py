@@ -7,7 +7,7 @@ from waitress import serve
 app = Flask(__name__)
 api = Api(app)
 
-@api.route('/api/swagger')
+@api.route('/api/swagger', doc=False)
 class Swagger(Resource):
     def get(self):
         swagger_url = url_for('api.swagger_json')
