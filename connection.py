@@ -3,7 +3,7 @@ from py2neo import Graph
 from neo4j.exceptions import Neo4jError
 
 
-graph = Graph("neo4j+s://45486069.databases.neo4j.io", auth=("neo4j", "12345678"))
+graph = Graph("neo4j+ssc://45486069.databases.neo4j.io", auth=("neo4j", "12345678"))
 api = Api()
 
 
@@ -38,10 +38,10 @@ def get_route(ruta):
 def get_rutas_de_un_nodo(nodo):
     try:
         query = """ MATCH (n:Parada {nombre: '""" +nodo+ """'})-[r]-(m:Parada)
-            WITH collect({coste: r.coste, ruta: type(r), tipo: r.tipo}) AS rutas
-            RETURN rutas"""
+            WITH collect(DISTINCT type(r)) AS rutas
+            RETURN [ruta IN rutas | REPLACE(ruta, "_", " ")] AS rutas"""
+
         response = graph.run(query).data()
-        
     
         if not response or not response[0]['rutas']:
             error_message = "El nodo ingresado no existe"
@@ -62,11 +62,11 @@ def get_ruta_mas_corta(origen, destino):
             CALL apoc.cypher.run('
             MATCH path = (o:Parada {nombre: $origen})-[*1..50]->(d:Parada {nombre: $destino})
             WHERE ALL(rel in relationships(path) WHERE type(rel) = $ruta)
-            RETURN [node in nodes(path) | node.nombre] AS camino, $ruta AS ruta, length(path) AS longitud
-            ORDER BY longitud
+            RETURN [node in nodes(path) | node.nombre] AS camino, $ruta AS ruta, reduce(coste = 0, rel in relationships(path) | coste + rel.coste) AS coste_total
+            ORDER BY coste_total
             LIMIT 1
             ', {origen: origen.nombre, destino: destino.nombre, ruta: ruta}) YIELD value
-            RETURN value.camino AS camino, value.ruta AS ruta, value.longitud AS longitud"""
+            RETURN value.camino AS camino, value.ruta AS ruta, value.coste_total AS tiempo"""
             
         result = graph.run(query, origen=origen, destino=destino).data()
         
@@ -75,12 +75,12 @@ def get_ruta_mas_corta(origen, destino):
         for r in result:
             camino = r['camino']
             ruta = r['ruta']
-            longitud = r['longitud']
+            tiempo = r['tiempo']
             
             resultado = {
                 'camino': camino,
                 'ruta': ruta,
-                'longitud': longitud
+                'tiempo': tiempo
             }
             
             resultados_procesados.append(resultado)
@@ -100,3 +100,30 @@ def get_ruta_mas_corta(origen, destino):
     except Neo4jError as e:
         error_message = str(e)
         return {'error': error_message}, 500
+    
+def get_coords(nodo):
+    try:
+        query = """
+        MATCH (n:Parada {nombre: $nodo})
+        RETURN n.latitud AS latitud, n.longitud AS longitud
+        """
+        response = graph.run(query, nodo=nodo).data()
+        return response, 200
+    except Neo4jError as e:
+        error_message = str(e)
+        return {'error': error_message}, 500
+    
+def get_list_of_coords(lista_nodos):
+    try:
+        query = """
+            MATCH (p:Parada)
+            WHERE p.nombre IN $nodos
+            RETURN p.latitud AS latitud, p.longitud AS longitud, p.nombre AS nodo
+        """
+        response = graph.run(query, nodos=lista_nodos).data()
+        return response, 200
+    except Neo4jError as e:
+        error_message = str(e)
+        return {'error': error_message}, 500
+
+

@@ -1,10 +1,11 @@
-from flask import Flask, jsonify, redirect, url_for
+from flask import Flask, redirect, url_for
 from flask_restx import Api, Resource
-from connection import get_all_nodes, get_ruta_mas_corta, get_rutas_de_un_nodo, get_route
-import requests
-from waitress import serve
+from connection import get_all_nodes, get_ruta_mas_corta, get_rutas_de_un_nodo, get_route, get_coords, get_list_of_coords
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 
 @api.route('/api/swagger', doc=False)
@@ -18,6 +19,20 @@ class AllNodes(Resource):
     def get(self):
         response, status_code = get_all_nodes()
         return response, status_code
+    
+@api.route('/nodes/get_coordenadas/<string:nodo>')
+class RutaIndividual(Resource):
+    def get(self, nodo):
+        response, status_code = get_coords(nodo)
+        return response, status_code
+    
+@api.route('/nodes/get_lista_coordenadas/<string:nodos>')
+class RutaIndividual(Resource):
+    def get(self, nodos):
+        lista_nodos = nodos.split(',')
+        response, status_code = get_list_of_coords(lista_nodos)
+        return response, status_code
+
 
 @api.route('/rutas/ruta_mas_corta/<string:origen>/<string:destino>')
 class RutaMasCorta(Resource):
@@ -38,5 +53,4 @@ class RutaIndividual(Resource):
         return response, status_code
 
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=8080)
-
+    app.run(host='127.0.0.1', port=8080, debug=True)
