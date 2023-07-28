@@ -56,6 +56,16 @@ def get_rutas_de_un_nodo(nodo):
 def get_ruta_mas_corta(origen, destino):
 
     try: 
+
+        origenExiste = get_one_node(origen)[0]
+        if (origenExiste == []):
+            return  {'error': 'El nodo origen no existe'}, 404
+        
+        destinoExiste = get_one_node(destino)[0]
+        if (destinoExiste == []):
+            return  {'error': 'El nodo destino no existe'}, 404
+
+
         query = """MATCH (origen:Parada {nombre: $origen}), (destino:Parada {nombre: $destino})
             WITH origen, destino, ['ruta_100', 'ruta_101', 'ruta_214', 'ruta_313', 'ruta_316', 'ruta_561', 'ruta_562'] AS rutas
             UNWIND rutas AS ruta
@@ -68,31 +78,11 @@ def get_ruta_mas_corta(origen, destino):
             ', {origen: origen.nombre, destino: destino.nombre, ruta: ruta}) YIELD value
             RETURN value.camino AS camino, value.ruta AS ruta, value.coste_total AS tiempo"""
             
-        result = graph.run(query, origen=origen, destino=destino).data()
+        response = graph.run(query, origen=origen, destino=destino).data()
+    
         
-        resultados_procesados = []
-        
-        for r in result:
-            camino = r['camino']
-            ruta = r['ruta']
-            tiempo = r['tiempo']
-            
-            resultado = {
-                'camino': camino,
-                'ruta': ruta,
-                'tiempo': tiempo
-            }
-            
-            resultados_procesados.append(resultado)
-        
-        response = {
-            'origen': origen,
-            'destino': destino,
-            'resultados': resultados_procesados
-        }
-        
-        if not response or not response['resultados']:
-            error_message = "El nodo origen o destino no existe"
+        if response == []:
+            error_message = "No existe una ruta directa entre las Paradas"
             return {'error': error_message}, 404
 
         return response, 200
@@ -101,8 +91,16 @@ def get_ruta_mas_corta(origen, destino):
         error_message = str(e)
         return {'error': error_message}, 500
     
+
+    
 def get_coords(nodo):
+    
     try:
+
+        nodoExiste = get_one_node(nodo)[0]
+        if (nodoExiste == []):
+            return  {'error': 'El nodo no existe'}, 404
+    
         query = """
         MATCH (n:Parada {nombre: $nodo})
         RETURN n.latitud AS latitud, n.longitud AS longitud
@@ -121,6 +119,23 @@ def get_list_of_coords(lista_nodos):
             RETURN p.latitud AS latitud, p.longitud AS longitud, p.nombre AS nodo
         """
         response = graph.run(query, nodos=lista_nodos).data()
+        
+        if (response == []):
+            return {'error': "La lista de nodos es invalida"}, 404
+
+        return response, 200
+    except Neo4jError as e:
+        error_message = str(e)
+        return {'error': error_message}, 500
+    
+
+def get_one_node(nodo):
+    try:
+        query = """
+            MATCH (p:Parada {nombre: $nodo})
+            RETURN p
+        """
+        response = graph.run(query, nodo=nodo).data()
         return response, 200
     except Neo4jError as e:
         error_message = str(e)
