@@ -85,7 +85,24 @@ def get_ruta_mas_corta(origen, destino):
             error_message = "No existe una ruta directa entre las Paradas"
             return {'error': error_message}, 404
 
-        return response, 200
+        
+        # Procesamos todas las rutas
+        resultados_procesados = []
+        for r in response:
+            camino = r['camino']
+            ruta = r['ruta']
+            tiempo = r['tiempo']
+
+            resultado = {
+                'camino': camino,
+                'ruta': ruta,
+                'tiempo': tiempo
+            }
+
+            resultados_procesados.append(resultado)
+
+        # Retornamos todas las rutas en un solo objeto JSON
+        return {'rutas': resultados_procesados}, 200
     
     except Neo4jError as e:
         error_message = str(e)
