@@ -65,19 +65,19 @@ def get_ruta_mas_corta(origen, destino):
         if (destinoExiste == []):
             return  {'error': 'El nodo destino no existe'}, 404
 
-
-        query = """MATCH (origen:Parada {nombre: $origen}), (destino:Parada {nombre: $destino})
-            WITH origen, destino, ['ruta_100', 'ruta_101', 'ruta_214', 'ruta_313', 'ruta_316', 'ruta_561', 'ruta_562'] AS rutas
-            UNWIND rutas AS ruta
-            CALL apoc.cypher.run('
+        query= """
+        MATCH (origen:Parada {nombre: $origen}), (destino:Parada {nombre: $destino})
+        WITH origen, destino, ['ruta_100', 'ruta_101', 'ruta_214', 'ruta_313', 'ruta_316', 'ruta_561', 'ruta_562'] AS rutas
+        UNWIND rutas AS ruta
+        CALL apoc.cypher.run('
             MATCH path = (o:Parada {nombre: $origen})-[*1..50]->(d:Parada {nombre: $destino})
-            WHERE ALL(rel in relationships(path) WHERE type(rel) = $ruta)
-            RETURN [node in nodes(path) | node.nombre] AS camino, $ruta AS ruta, reduce(coste = 0, rel in relationships(path) | coste + rel.coste) AS coste_total
-            ORDER BY coste_total
+            WHERE ALL(rel in relationships(path) WHERE type(rel) = $ruta AND rel.tipo = $tipo)
+            RETURN [node in nodes(path) | node.nombre] AS camino, $ruta AS ruta
+            ORDER BY length(path)
             LIMIT 1
-            ', {origen: origen.nombre, destino: destino.nombre, ruta: ruta}) YIELD value
-            RETURN value.camino AS camino, value.ruta AS ruta, value.coste_total AS tiempo"""
-            
+        ', {origen: origen.nombre, destino: destino.nombre, ruta: ruta, tipo: "ida"}) YIELD value
+        RETURN value.camino AS camino, value.ruta AS ruta
+        """
         response = graph.run(query, origen=origen, destino=destino).data()
     
         
