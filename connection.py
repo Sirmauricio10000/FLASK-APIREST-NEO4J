@@ -1,9 +1,16 @@
+import os
 from flask_restx import Api
 from py2neo import Graph
 from neo4j.exceptions import Neo4jError
+from dotenv import load_dotenv
 
+load_dotenv()
 
-graph = Graph("neo4j+ssc://45486069.databases.neo4j.io", auth=("neo4j", "12345678"))
+URI = os.environ.get('NEO4JURI')
+USER = os.environ.get('NEO4JUSER')
+PASSWORD = os.environ.get('NEO4JPASSWORD')
+
+graph = Graph(URI, auth=(USER, PASSWORD))
 api = Api()
 
 
