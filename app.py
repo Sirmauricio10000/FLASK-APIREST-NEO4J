@@ -1,4 +1,3 @@
-from aifc import Error
 from flask import Flask, redirect, url_for
 from flask_restx import Api, Namespace, Resource
 from connection import (

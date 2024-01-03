@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-URI = os.environ.get('NEO4JURI')
-USER = os.environ.get('NEO4JUSER')
-PASSWORD = os.environ.get('NEO4JPASSWORD')
+URI = os.getenv("NEO4JURI")
+USER = os.getenv("NEO4JUSER")
+PASSWORD = os.getenv("NEO4JPASSWORD")
 
 graph = Graph(URI, auth=(USER, PASSWORD))
 api = Api()
