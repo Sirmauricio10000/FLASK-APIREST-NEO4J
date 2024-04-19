@@ -17,6 +17,7 @@ class TestGetAllNodes(unittest.TestCase):
 class TestGetCoords(unittest.TestCase):
 
     url = "http://127.0.0.1:5000/Nodes/nodes/get_coordenadas/"
+    
     def test_get_coordenadas_check_status_code(self):
         nodo = "Amaneceres del Valle"
         response = requests.get(self.url + nodo)

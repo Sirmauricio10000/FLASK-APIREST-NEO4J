@@ -1,3 +1,4 @@
+import os
 from flask import Flask, redirect, url_for
 from flask_restx import Api, Namespace, Resource
 from connection import (
@@ -47,6 +48,7 @@ class Swagger(Resource):
     def get(self):
         swagger_url = url_for("api.swagger_json")
         return redirect(swagger_url)
+    
 
 
 @namespace_nodes.route("/nodes")

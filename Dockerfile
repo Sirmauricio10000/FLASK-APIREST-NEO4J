@@ -1,11 +1,15 @@
-FROM python:3.10
+FROM python:3.9-alpine
 
 WORKDIR /app
 
 COPY . . 
 
-EXPOSE 8080
+EXPOSE 5000
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "app.py", "--port", "8080"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["flask", "run", "--host=0.0.0.0"]
